@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>loupe: spot the edit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--s1:#8fd3ff;--s2:#e9f7ff;--card:rgba(255,255,255,.72);--ink:#0b3a5c;--mute:#3f6a8a;--line:#a9d4ee;--acc:#1e9fe8;--ok:#0b8f86;--warn:#c27a00;--bad:#d93f4c;--cloud:#fff;--co:.75;--f:"Josefin Sans","Avenir Next","Century Gothic",system-ui,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--s1:#06223a;--s2:#0d3a5e;--card:rgba(10,40,70,.7);--ink:#e3f4ff;--mute:#9cc7e6;--line:#26587f;--acc:#5cc8ff;--ok:#4fd8c8;--warn:#f0b34a;--bad:#ff7d87;--co:.07}}
+:root[data-theme="dark"]{--s1:#06223a;--s2:#0d3a5e;--card:rgba(10,40,70,.7);--ink:#e3f4ff;--mute:#9cc7e6;--line:#26587f;--acc:#5cc8ff;--ok:#4fd8c8;--warn:#f0b34a;--bad:#ff7d87;--co:.07}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);font:300 18px/1.6 var(--f);background:linear-gradient(180deg,var(--s1),var(--s2) 75%) fixed}
+.sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+.cl{position:absolute;left:0;width:220px;height:58px;background:var(--cloud);border-radius:60px;opacity:var(--co);animation:drift 70s linear infinite}
+.cl:before,.cl:after{content:"";position:absolute;background:inherit;border-radius:50%}
+.cl:before{width:90px;height:90px;left:34px;top:-42px}.cl:after{width:120px;height:120px;left:92px;top:-62px}
+.c1{top:12%;animation-delay:-20s}.c2{top:42%;transform-origin:left;scale:1.5;animation-duration:110s;animation-delay:-70s}.c3{top:72%;scale:.7;animation-duration:90s;animation-delay:-40s}
+@keyframes drift{from{translate:-320px 0}to{translate:calc(100vw + 120px) 0}}
+main{max-width:760px;margin:0 auto;padding:30px 22px 70px}
+.sm{font-variant-caps:all-small-caps;text-transform:lowercase;letter-spacing:.16em;font-weight:600}
+.mark{font-size:1.25rem;display:flex;align-items:center;gap:10px}
+.mark i{width:15px;height:15px;border:2px solid var(--acc);border-radius:50%;position:relative}
+.mark i:after{content:"";position:absolute;width:2px;height:7px;background:var(--acc);right:-3px;bottom:-6px;transform:rotate(-45deg)}
+h1{font-weight:300;font-size:clamp(2.6rem,9vw,4.6rem);line-height:1;letter-spacing:.1em;margin:56px 0 16px;font-variant-caps:all-small-caps;text-transform:lowercase}
+p.sub{color:var(--mute);max-width:44ch;margin:0 0 36px;font-size:1.1rem}
+label.drop{--c:var(--ink);display:flex;align-items:center;justify-content:center;text-align:center;position:relative;aspect-ratio:16/10;overflow:hidden;cursor:pointer;color:var(--mute);padding:20px;background:var(--card);backdrop-filter:blur(8px);border-radius:4px;transition:box-shadow .25s}
+label.drop:before{content:"";position:absolute;inset:8px;pointer-events:none;--k:linear-gradient(var(--c),var(--c));background:var(--k) 0 0/20px 2px,var(--k) 0 0/2px 20px,var(--k) 100% 0/20px 2px,var(--k) 100% 0/2px 20px,var(--k) 0 100%/20px 2px,var(--k) 0 100%/2px 20px,var(--k) 100% 100%/20px 2px,var(--k) 100% 100%/2px 20px;background-repeat:no-repeat;z-index:3}
+label.drop:hover,label.drop:focus-within{--c:var(--acc);box-shadow:0 10px 40px -12px var(--acc)}
+.ph b{display:block;font-size:1.4rem;color:var(--ink);margin-bottom:4px}
+label.drop img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1}
+img[hidden]{display:none}
+input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
+.scan{display:none;position:absolute;left:0;right:0;top:0;height:3px;z-index:2;background:linear-gradient(90deg,transparent,var(--acc),transparent);box-shadow:0 0 22px 4px var(--acc)}
+.scanning .scan{display:block;animation:scan 1.1s ease-in-out infinite alternate}
+@keyframes scan{to{top:calc(100% - 3px)}}
+.actions{margin-top:26px;display:flex;gap:12px;flex-wrap:wrap}
+button{font:600 .95rem var(--f);font-variant-caps:all-small-caps;letter-spacing:.16em;background:var(--ink);color:var(--s2);border:0;border-radius:99px;padding:13px 30px;cursor:pointer;transition:background .2s,transform .2s}
+button:hover:not(:disabled){background:var(--acc);color:#fff;transform:translateY(-1px)}
+button:disabled{opacity:.3;cursor:not-allowed}
+button.alt{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+#out{margin-top:40px}
+.card{background:var(--card);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:4px;padding:22px;margin-bottom:16px;animation:in .5s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.card.good{border-left:5px solid var(--ok)}.card.warn{border-left:5px solid var(--warn)}.card.bad{border-left:5px solid var(--bad)}
+.good .verdict{color:var(--ok)}.warn .verdict{color:var(--warn)}.bad .verdict{color:var(--bad)}
+.verdict{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.1}
+.card p{margin:10px 0 0;max-width:58ch}
+.meter{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:18px}
+.meter i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--bad));transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:560px){.pair{grid-template-columns:1fr}}
+figure{margin:0}figcaption{margin-top:6px;color:var(--mute);font-size:.95rem}
+canvas{width:100%;height:auto;display:block;border-radius:4px;animation:in .8s ease-out}
+.row{margin:8px 0;font-size:.95rem}.row span{display:inline-block;min-width:110px;color:var(--mute)}
+code{font:.82rem ui-monospace,Menlo,monospace;word-break:break-all}
+summary{cursor:pointer}
+.note{font-size:.9rem;color:var(--mute);margin-top:44px;max-width:60ch}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"><span class="cl c1"></span><span class="cl c2"></span><span class="cl c3"></span></div>
+<main>
+<div class="mark sm"><i></i>loupe</div>
+<h1>spot the edit</h1>
+<p class="sub">Drop in one picture. Loupe looks for patches that were pasted, retouched or covered up. Nothing leaves your device.</p>
+<label class="drop" id="drop"><span class="ph"><b class="sm">choose a picture</b>tap here or drop a file</span><input type="file" id="f" accept="image/*"><img id="p" hidden alt="Picture to check"><div class="scan"></div></label>
+<div class="actions"><button id="go" disabled>analyze</button><button id="reset" class="alt" onclick="location.reload()">start over</button></div>
+<div id="out" aria-live="polite"></div>
+<p class="note">Loupe gives a hint, not proof. It works best on JPEG photos; screenshots and PNG files carry little editing history, and heavy re-saving can also light up the map.</p>
+</main>
+<script>
+function md5(bytes){
+  const K=new Uint32Array(64),S=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21];
+  for(let i=0;i<64;i++)K[i]=Math.floor(Math.abs(Math.sin(i+1))*4294967296)>>>0;
+  const n=bytes.length,len=((n+8>>6)+1)<<6,b=new Uint8Array(len);
+  b.set(bytes);b[n]=0x80;
+  const dv=new DataView(b.buffer);
+  dv.setUint32(len-8,(n<<3)>>>0,true);dv.setUint32(len-4,Math.floor(n/536870912),true);
+  let a0=0x67452301,b0=0xefcdab89,c0=0x98badcfe,d0=0x10325476;
+  const M=new Uint32Array(16);
+  for(let o=0;o<len;o+=64){
+    for(let i=0;i<16;i++)M[i]=dv.getUint32(o+i*4,true);
+    let A=a0,B=b0,C=c0,D=d0;
+    for(let i=0;i<64;i++){
+      let F,g;
+      if(i<16){F=(B&C)|(~B&D);g=i}
+      else if(i<32){F=(D&B)|(~D&C);g=(5*i+1)%16}
+      else if(i<48){F=B^C^D;g=(3*i+5)%16}
+      else{F=C^(B|~D);g=(7*i)%16}
+      F=(F+A+K[i]+M[g])>>>0;A=D;D=C;C=B;
+      const s=S[(i>>4)*4+(i&3)];
+      B=(B+((F<<s)|(F>>>(32-s))))>>>0;
+    }
+    a0=(a0+A)>>>0;b0=(b0+B)>>>0;c0=(c0+C)>>>0;d0=(d0+D)>>>0;
+  }
+  const out=new Uint8Array(16),o=new DataView(out.buffer);
+  [a0,b0,c0,d0].forEach((v,i)=>o.setUint32(i*4,v,true));
+  return [...out].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+const $=id=>document.getElementById(id);
+let file;
+const load=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src instanceof Blob?URL.createObjectURL(src):src});
+function pick(f){if(!f||!f.type.startsWith("image/"))return;file=f;$("p").src=URL.createObjectURL(f);$("p").hidden=false;$("go").disabled=false;$("out").innerHTML=""}
+$("f").onchange=e=>pick(e.target.files[0]);
+const dz=$("drop");dz.ondragover=e=>e.preventDefault();dz.ondrop=e=>{e.preventDefault();pick(e.dataTransfer.files[0])};
+const ramp=v=>v<.5?[11+90*v,58+248*v,92+326*v]:[56+398*(v-.5),182-150*(v-.5),255-296*(v-.5)];
+const LUT=Array.from({length:256},(_,i)=>ramp(i/255));
+const T=[["looks consistent","good","No area stands out. That does not prove the picture is untouched, but nothing obvious was found."],["some areas stand out","warn","A few regions react differently from the rest. Look at the bright patches in the heatmap."],["strong signs of editing","bad","One or more regions stand out sharply. Check the bright patches in the heatmap."]];
+$("go").onclick=async()=>{
+  const out=$("out");out.innerHTML="";dz.classList.add("scanning");$("go").disabled=true;
+  const wait=new Promise(r=>setTimeout(r,1600));
+  try{
+    const [buf,img]=await Promise.all([file.arrayBuffer(),load(file)]);
+    let w=img.naturalWidth,h=img.naturalHeight;const s=Math.min(1,2400/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
+    const oc=document.createElement("canvas");oc.width=w;oc.height=h;
+    const c=document.createElement("canvas");c.width=w;c.height=h;
+    const x=c.getContext("2d",{willReadFrequently:true});
+    oc.getContext("2d").drawImage(img,0,0,w,h);x.drawImage(img,0,0,w,h);
+    const A=x.getImageData(0,0,w,h);
+    const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.9));
+    const j=await load(blob);x.drawImage(j,0,0,w,h);
+    const B=x.getImageData(0,0,w,h);
+    const n=w*h,dv=new Uint8Array(n),hist=new Uint32Array(256),bs=new Float64Array(256),bc=new Uint32Array(256);
+    for(let k=0,p=0;k<n;k++,p+=4){
+      const m=Math.max(Math.abs(A.data[p]-B.data[p]),Math.abs(A.data[p+1]-B.data[p+1]),Math.abs(A.data[p+2]-B.data[p+2]));
+      dv[k]=m;hist[m]++;
+      const b=Math.min(15,((k%w)*16/w)|0)+16*Math.min(15,(((k/w)|0)*16/h)|0);bs[b]+=m;bc[b]++;
+    }
+    const bm=[...bs].map((v,i)=>v/Math.max(1,bc[i])).sort((a,b)=>a-b);
+    const ratio=bm[243]/(bm[128]+.5);
+    let acc=0,p995=1;for(let v=0;v<256;v++){acc+=hist[v];if(acc>=n*.995){p995=v;break}}
+    const top=Math.max(6,p995),H=x.createImageData(w,h);
+    for(let k=0,p=0;k<n;k++,p+=4){const l=LUT[Math.min(255,(dv[k]*255/top)|0)];H.data[p]=l[0];H.data[p+1]=l[1];H.data[p+2]=l[2];H.data[p+3]=255}
+    x.putImageData(H,0,0);
+    const lvl=ratio<1.8?0:ratio<3.2?1:2,pct=Math.min(100,Math.round(ratio/5*100));
+    const png=/png|gif|webp|bmp/.test(file.type);
+    await wait;
+    out.innerHTML=`<div class="card ${T[lvl][1]}"><div class="verdict sm">${T[lvl][0]}</div><p>${T[lvl][2]}</p>${png?"<p>This is not a JPEG, so the result is less reliable.</p>":""}<div class="meter"><i></i></div></div>
+    <div class="pair"><figure id="fo"><figcaption>your picture</figcaption></figure><figure id="fh"><figcaption>heatmap: brighter means more suspicious</figcaption></figure></div>
+    <details class="card"><summary class="sm">details</summary><div class="row"><span>fingerprint</span><code>${md5(new Uint8Array(buf))}</code></div><div class="row"><span>size</span>${img.naturalWidth} × ${img.naturalHeight}px</div><div class="row"><span>signal</span>${ratio.toFixed(2)} (above about 1.8 is notable)</div><p>Keep the fingerprint. If another copy of this picture has the same one, it is unchanged.</p></details>`;
+    $("fo").prepend(oc);$("fh").prepend(c);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{out.querySelector(".meter i").style.width=pct+"%"}));
+  }catch(e){out.innerHTML=`<div class="card bad"><div class="verdict sm">could not read this file</div><p>Try a JPEG or PNG picture.</p></div>`}
+  dz.classList.remove("scanning");$("go").disabled=false;
+};
+</script>
+</body>
+</html>
